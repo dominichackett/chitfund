@@ -32,13 +32,13 @@ import { useRouter } from "next/navigation";
 //import UserImage from './images/user.png';
 const navigation = [
   { name: 'Home', icon: HomeIcon, current: true ,href:'/home'},
-  { name: 'Create Chit Fund', icon: PlusCircleIcon, current: true ,href:'/home'},
+  { name: 'Create Chit Fund', icon: PlusCircleIcon, current: true ,href:'/createchitfund'},
   
   { name: 'Profile', icon: UserIcon, current: false,href:'/profile' },
   { name: 'Notifications', icon: BellAlertIcon, current: false,href:'/myevents' },
 
   { name: 'Earnings', icon: CurrencyDollarIcon, current: false,href:'/earnings' },
-  { name: 'Credit Rating', icon: PresentationChartLineIcon, current: false,href:'/earnings' },
+  { name: 'Credit Rating', icon: PresentationChartLineIcon, current: false,href:'/creditscore' },
 
 ]
 const secondaryNavigation = [

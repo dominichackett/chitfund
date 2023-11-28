@@ -8,9 +8,11 @@ import PolygonIdLogo from "./images/polygonid.png"
 import ChainLinkLogo from "./images/chainlinklogo.svg"
 import PoweredBy from "./images/powered.png"
 import Link from 'next/link'
-import FeaturesList from '@/app/components/FeaturesList';
+import FeaturesList from '../components/FeaturesList';
 
-import Footer from '@/app/components/Footer/Footer'; 
+import Footer from '../components/Footer/Footer'; 
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+
 const navigation = [
     { name: 'Home', href: '/', current: false },
     { name: 'Features', href: '#', current: true },
@@ -34,7 +36,7 @@ const navigation = [
 
           
                     </div>
-                    <div className="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
+                    <div className=" hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
                       {navigation.map((item) => (
                         <Link
                           key={item.name}
@@ -50,8 +52,13 @@ const navigation = [
                           {item.name} 
                         </Link>
                       ))}
+                     
                     </div>
+                
                   </div>
+                  <div className="ml-auto pt-1">
+              <ConnectButton />
+            </div>
                   <div className="hidden sm:ml-6 sm:flex sm:items-center">
                    
                   </div>
@@ -79,6 +86,9 @@ const navigation = [
                     </Link>
                   ))}
                 </div>
+                <div className="ml-auto">
+              <ConnectButton />
+            </div>
                </Disclosure.Panel>
             </>
           )}
