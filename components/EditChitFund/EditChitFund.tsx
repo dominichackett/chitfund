@@ -4,13 +4,15 @@ import { PhotoIcon } from '@heroicons/react/24/solid'
 import Notification from "../Notification/Notification"
 import { Web3Storage, File } from "web3.storage";
 import { Database } from "@tableland/sdk";
-import { useWalletClient } from "wagmi";
-
+import { useWalletClient,useAccount } from "wagmi";
+import { insertChitFund } from "../../tableland/tableland";
 //import axios from "axios";
 import { format ,parseISO} from 'date-fns';
 import { ethers } from 'ethers';
+import { chitFundAddress,chitFundABI } from "../../cotract";
 
 export default function EditChitFund() {
+  const { address, isConnecting, isDisconnected } = useAccount()
 
   const [db,setDb] = useState()
   const { data: walletClient } = useWalletClient()
@@ -83,7 +85,7 @@ export default function EditChitFund() {
     
 
   const _handleSubmit = async (data:any,e:any) => {
-
+    console.log(data)
     if(!selectedFile)
     {
       setNotificationTitle("Create ChitFund")
@@ -100,7 +102,51 @@ export default function EditChitFund() {
     setNotificationDescription("Uploading ChitFund Image.")
     setDialogType(3) //Information
     setShow(true)     
-       
+    // Create a promise to resolve when the event is emitted
+  let resolveFunc;
+  const eventPromise = new Promise((resolve) => {
+    resolveFunc = resolve;
+  });
+
+  
+    try 
+    { 
+       const cid = await storage.put([new File([selectedFile],filename.current)]);
+       const imageurl = "https://"+cid+".ipfs.w3s.link/"+filename.current
+       const startdate = new Date().getTime()
+
+       setNotificationTitle("Create ChitFund")
+       const contract = new ethers.Contract(chitFundAddress, chitFundABI, walletClient);
+      // Subscribe to the event
+       contract.on('NewFund', (fundId, participants, numberOfCycles, amountToBePaid, startDate, event) => {
+        console.log('New Fund Created:', fundId.toNumber());
+       // Resolve the promise with the fundId
+        resolveFunc(fundId.toNumber());
+     });
+  
+       var  participants= data.participants.split('\n'); // Split text into an array of lines
+ 
+       const tx = await contract.callStatic.newChit(participants, data.cycleCount, data.frequency, data.amount);
+       const transaction = await contract.newChit(participants, data.cycleCount, data.frequency, data.amount);
+       await transaction.wait(); // Wait for the transaction to be mined
+      // Wait for the event promise to be resolved
+       const fundId = await eventPromise;
+       await insertChitFund(db,fundId,address,data.frequency,startdate,imageurl)
+     
+       setNotificationDescription("ChitFund Successfully Created")
+       setDialogType(1) //Success
+       setShow(true)    
+       setIsSaving(false)
+ 
+    }catch(error){
+
+      setNotificationTitle("Create ChitFund")
+      setNotificationDescription(error.message)
+      setDialogType(2) //Error
+      setShow(true)    
+      setIsSaving(false)
+
+    }  
 
   }
   function validateParticipants(value:any){
@@ -225,6 +271,30 @@ export default function EditChitFund() {
 
       </div>
       {errors.amount?.type === 'required' && <span className="text-sm text-red-700">Amount is required</span>}
+
+            </div>
+
+
+            <div className="sm:col-span-4">
+            <label htmlFor="cycleCount" className="mb-2 block text-sm font-medium text-gray-700">
+        Cycle Count
+      </label>
+      <div className="mt-1 relative rounded-md shadow-sm">
+      
+        <input
+          type="number"
+          name="cycleCount"
+          id="cycleCount"
+          className="p-2 focus:ring-my-red focus:border-my-red block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
+          placeholder="1"
+          {...register("cycleCount", { min:1,required: true})} 
+
+        />
+       
+
+      </div>
+      {errors.cycleCount?.type === 'required' && <span className="text-sm text-red-700">Cycle Count is required</span>}
+      {errors.cycleCount?.type === 'min' && <span className="text-sm text-red-700">Cycle Count must be greater than 0</span>}
 
             </div>
             <div className="sm:col-span-6">
