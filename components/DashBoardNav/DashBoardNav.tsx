@@ -16,7 +16,7 @@ import {
   CalendarIcon,
   BellAlertIcon,
   FilmIcon,
-  PresentationChartLineIcon
+  PresentationChartLineIcon,CreditCardIcon
 } from '@heroicons/react/24/outline'
 import {
   
@@ -31,11 +31,12 @@ import { useRouter } from "next/navigation";
 
 //import UserImage from './images/user.png';
 const navigation = [
-  { name: 'Home', icon: HomeIcon, current: true ,href:'/home'},
+  { name: 'Home', icon: HomeIcon, current: true ,href:'/dashboard'},
   { name: 'Create Chit Fund', icon: PlusCircleIcon, current: true ,href:'/createchitfund'},
-  
-  { name: 'Profile', icon: UserIcon, current: false,href:'/profile' },
-  { name: 'Notifications', icon: BellAlertIcon, current: false,href:'/myevents' },
+  { name: 'Payment History', icon: CreditCardIcon, current: false,href:'/payments' },
+
+  //{ name: 'Profile', icon: UserIcon, current: false,href:'/profile' },
+  //{ name: 'Notifications', icon: BellAlertIcon, current: false,href:'/myevents' },
 
   { name: 'Earnings', icon: CurrencyDollarIcon, current: false,href:'/earnings' },
   { name: 'Credit Rating', icon: PresentationChartLineIcon, current: false,href:'/creditscore' },

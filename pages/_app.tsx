@@ -12,7 +12,7 @@ import { publicProvider } from 'wagmi/providers/public';
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [
    
-    sepolia,goerli,polygonMumbai,baseGoerli,optimismGoerli
+    polygonMumbai,sepolia,goerli,baseGoerli,optimismGoerli
   ],
   [publicProvider()]
 );
