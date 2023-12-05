@@ -4,7 +4,7 @@ import { getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import type { AppProps } from 'next/app';
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
 import {
-  goerli,
+  
   polygonMumbai,sepolia,baseGoerli,optimismGoerli
 } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
@@ -12,7 +12,7 @@ import { publicProvider } from 'wagmi/providers/public';
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [
    
-    polygonMumbai,sepolia,goerli,baseGoerli,optimismGoerli
+    polygonMumbai,sepolia,baseGoerli,optimismGoerli
   ],
   [publicProvider()]
 );

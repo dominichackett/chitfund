@@ -9,12 +9,11 @@ import { insertChitFund } from "../../tableland/tableland";
 //import axios from "axios";
 import { format ,parseISO} from 'date-fns';
 import { ethers } from 'ethers';
-import { chitFundAddress,chitFundABI } from "../../cotract";
+import { chitFundAddress,chitFundABI } from "../../contract";
 
 export default function EditChitFund() {
   const { address, isConnecting, isDisconnected } = useAccount()
 
-  const [db,setDb] = useState()
   const { data: walletClient } = useWalletClient()
   const chitFundPicRef = useRef("");
   const [preview, setPreview] = useState('')
@@ -60,14 +59,7 @@ export default function EditChitFund() {
     
     }
 
-    useEffect(()=>{
-      if(walletClient) 
-      {
-        const _db =  new Database({walletClient})
-        setDb(_db)  
-      }
-         
-    },[walletClient])  
+    
   
     
     useEffect(() => {
@@ -131,7 +123,7 @@ export default function EditChitFund() {
        await transaction.wait(); // Wait for the transaction to be mined
       // Wait for the event promise to be resolved
        const fundId = await eventPromise;
-       await insertChitFund(db,fundId,address,data.frequency,startdate,imageurl)
+       await insertChitFund(fundId,address,data.name,data.frequency,startdate,imageurl,data.amount,data.cycleCount,data.participants)
      
        setNotificationDescription("ChitFund Successfully Created")
        setDialogType(1) //Success

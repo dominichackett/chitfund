@@ -12,8 +12,10 @@
   }
   ```
 */
-import { useLayoutEffect, useRef, useState } from 'react'
-
+import { useEffect, useRef, useState } from 'react'
+import { useWalletClient,useAccount } from "wagmi";
+import { ethers } from 'ethers';
+import { chitFundABI,chitFundAddress } from '../../contract';
 const people = [
   {
     name: 'Lindsay Walton',
@@ -33,10 +35,44 @@ function classNames(...classes) {
 }
 
 export default function PaymentList() {
- 
+    const { address, isConnecting, isDisconnected } = useAccount()
  
 
- 
+ useEffect(()=>{
+    const listenToEvents = async () => {
+        if (address) {
+
+            const wallet = new ethers.Wallet(process.env.NEXT_PUBLIC_PRIVATE_KEY)
+            const provider = new ethers.providers.JsonRpcProvider(
+                "https://rpc.ankr.com/polygon_mumbai"
+              );
+            
+            const signer = wallet.connect(provider);   
+          
+          const contract = new ethers.Contract(chitFundAddress, chitFundABI, signer);
+  
+          // Get past events
+          const pastEvents = await contract.queryFilter('PaymentMade', 0, 'latest', {
+            address: address
+          });
+  
+         
+          pastEvents.forEach((event) => {
+            console.log('Historical PaymentMade event:', {
+              FundId: event.args.FundId,
+              CycleId: event.args.CycleId,
+              Payer: event.args.Payer,
+              AmountPaid: event.args.AmountPaid,
+            });
+            // Handle historical event data as needed
+          });
+        
+       
+        }
+      };
+  
+      listenToEvents();
+ },[address])
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">

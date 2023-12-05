@@ -6,10 +6,18 @@ import ChitFundImage from "../../images/chitfund.svg";
 import UserImage from "../../images/user.png"
 import Notification from '../Notification/Notification';
 import PaymentDialog from '../Payment/Payment';
+import { ccipPaymentContractAddress,ccipPaymentContractABI,usdcContractAddress,usdcContractABI, chitFundAddress, chitFundABI } from '../../contract';
+import { useNetwork } from 'wagmi'
+import { polygonMumbai } from 'viem/chains';
+import { useWalletClient,useAccount } from "wagmi";
+import { ethers } from 'ethers';
   function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
   }  
   export default function HomeFeed() {
+    const { chain } = useNetwork()
+    const { data: walletClient } = useWalletClient()
+
    const router = useRouter();
     const [chitfunds,setChitFunds] = useState([{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly"}
     ,{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly"},{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly"},{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly"},{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly"},{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly"}]);
@@ -66,6 +74,112 @@ import PaymentDialog from '../Payment/Payment';
   
         return;
       }
+      const usdcContract = new ethers.Contract(
+        usdcContractAddress.get(chain.id),
+        usdcContractABI,
+        walletClient
+      );
+      try {
+
+
+        const amount = ethers.utils.parseUnits(_amount, 18);
+        let tx = await usdcContract.callStatic.approve(
+          chain.id  == polygonMumbai.id ? chitFundAddress : ccipPaymentContractAddress.get(chain.id),
+          amount,
+          {
+            gasLimit: 3000000,
+          }
+        );
+  
+        let tx1 = await  usdcContract.approve(
+          chain.id  == polygonMumbai.id ? chitFundAddress : ccipPaymentContractAddress.get(chain.id),          amount,
+          {
+            gasLimit: 3000000,
+          }
+        );
+        await tx1.wait();    
+
+           if(chain.id ==  polygonMumbai.id) // make Payment on Mumbai
+           {
+              const payContract = new ethers.Contract(
+                chitFundAddress,
+                chitFundABI,
+                walletClient
+               );
+
+               let tx = await payContract.callStatic.makePayment(
+                fund,cycle,
+                {
+                  gasLimit: 3000000,
+                }
+              );
+        
+              let tx1 = await payContract.callStatic.makePayment(
+                fund,cycle,
+                  {
+                  gasLimit: 3000000,
+                }
+              );
+              await tx1.wait();    
+              setDialogType(1); //Success
+              setNotificationTitle("Make Payment");
+              setNotificationDescription("Payment successfully made.");
+              setShow(true); 
+
+
+           }
+           else  //Make Cross Chain Payment
+           {
+            const payContract = new ethers.Contract(
+              ccipPaymentContractAddress.get(chain.id),
+              ccipPaymentContractABI,
+              walletClient
+             );
+
+             let tx = await payContract.callStatic.makePayment(
+              fund,cycle,
+              {
+                gasLimit: 3000000,
+              }
+            );
+      
+            let tx1 = await payContract.callStatic.makePayment(
+              fund,cycle,
+                {
+                gasLimit: 3000000,
+              }
+            );
+            await tx1.wait();    
+            setDialogType(1); //Success
+            setNotificationTitle("Make Payment");
+            setNotificationDescription("Payment successfully made.");
+            setShow(true); 
+
+
+           }
+
+      }
+      catch(error)
+      {
+        if (error.code === "TRANSACTION_REVERTED") {
+          console.log("Transaction reverted");
+          //let revertReason = ethers.utils.parseRevertReason(error.data);
+          setNotificationDescription("Reverted");
+        } else if (error.code === "ACTION_REJECTED") {
+          setNotificationDescription("Transaction rejected by user");
+        } else {
+          console.log(error);
+          //const errorMessage = ethers.utils.revert(error.reason);
+          setNotificationDescription(
+            `Transaction failed with error: ${error.reason}`
+          );
+        }
+        setDialogType(2); //Error
+        setNotificationTitle("Create ChitFund");
+  
+        setShow(true);
+      }    
+    
   
   }
 
