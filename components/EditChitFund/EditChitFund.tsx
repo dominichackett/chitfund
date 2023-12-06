@@ -10,9 +10,11 @@ import { insertChitFund } from "../../tableland/tableland";
 import { format ,parseISO} from 'date-fns';
 import { ethers } from 'ethers';
 import { chitFundAddress,chitFundABI } from "../../contract";
-
+import { useNetwork } from 'wagmi'
+import { polygonMumbai } from "viem/chains";
 export default function EditChitFund() {
   const { address, isConnecting, isDisconnected } = useAccount()
+  const { chain } = useNetwork()
 
   const { data: walletClient } = useWalletClient()
   const chitFundPicRef = useRef("");
@@ -77,7 +79,15 @@ export default function EditChitFund() {
     
 
   const _handleSubmit = async (data:any,e:any) => {
-    console.log(data)
+
+    if(chain.id != polygonMumbai.id)
+    {
+      setNotificationTitle("Create ChitFund")
+      setNotificationDescription("Please select polygon mumbai network.")
+      setDialogType(2) //Error
+      setShow(true)    
+      return
+    }
     if(!selectedFile)
     {
       setNotificationTitle("Create ChitFund")
