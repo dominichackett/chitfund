@@ -3,7 +3,6 @@ import {useState,useRef,useEffect} from 'react';
 import { PhotoIcon } from '@heroicons/react/24/solid'
 import Notification from "../Notification/Notification"
 import { Web3Storage, File } from "web3.storage";
-import { Database } from "@tableland/sdk";
 import { useWalletClient,useAccount } from "wagmi";
 import { insertChitFund } from "../../tableland/tableland";
 //import axios from "axios";
@@ -12,9 +11,14 @@ import { ethers } from 'ethers';
 import { chitFundAddress,chitFundABI } from "../../contract";
 import { useNetwork } from 'wagmi'
 import { polygonMumbai } from "viem/chains";
+import { Database,Registry } from "@tableland/sdk";
+import { providers } from "ethers";
+import { useSigner } from "../../hooks/useEthersAccounts";
+
 export default function EditChitFund() {
   const { address, isConnecting, isDisconnected } = useAccount()
   const { chain } = useNetwork()
+  const signer = useSigner();
 
   const { data: walletClient } = useWalletClient()
   const chitFundPicRef = useRef("");
@@ -61,7 +65,34 @@ export default function EditChitFund() {
     
     }
 
-    
+      useEffect(()=>{
+     async function setRegister(){   
+      if(walletClient) 
+      {
+
+
+      
+        const _db =  new Database({signer})
+        console.log(walletClient)
+        console.log(_db)
+        const reg = new Registry(_db.config); // Note: *must* have a signer
+        
+        const tx = await reg.setController({
+          controller: "0x6620CdE1c08d84103D2d81f5f2AB645A6478DFBc", // The address to send the table to
+          tableName: "mychitfund_80001_8389", // Also accepts name as string
+        });
+
+        const tx2 = await reg.setController({
+          controller: "0x6620CdE1c08d84103D2d81f5f2AB645A6478DFBc", // The address to send the table to
+          tableName: "xfund_80001_8406", // Also accepts name as string
+        });
+        
+      }
+    }
+
+    setRegister()
+         
+    },[walletClient])  
   
     
     useEffect(() => {
@@ -118,7 +149,7 @@ export default function EditChitFund() {
        const startdate = new Date().getTime()
 
        setNotificationTitle("Create ChitFund")
-       const contract = new ethers.Contract(chitFundAddress, chitFundABI, walletClient);
+       const contract = new ethers.Contract(chitFundAddress, chitFundABI, signer);
       // Subscribe to the event
        contract.on('NewFund', (fundId, participants, numberOfCycles, amountToBePaid, startDate, event) => {
         console.log('New Fund Created:', fundId.toNumber());

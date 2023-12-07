@@ -14,7 +14,6 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 const navigation = [
   { name: 'Home', href: '/' },
-  { name: 'Features', href: '/features' },
   ]
 
 export default function Home() {
