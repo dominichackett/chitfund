@@ -7,18 +7,21 @@ pragma solidity ^0.8.19;
 import "./strings.sol";
 import "./Messenger.sol";
 import "./RandomNumber.sol";
+import "./ICreditScore.sol";
 
 
-contract dechit  {
+contract ChitFund   {
     using strings for *;
 
     uint fundId = 100000;
     IERC20 USDC ;
     Messenger messenger;
     RandomNumber RN;
+    ICreditScore CS;
     string[] public parts;
     bool public n;
     uint256 public requestId ;
+    uint256[] public _num;
 
 
 
@@ -101,6 +104,15 @@ contract dechit  {
 
     }
 
+    function addCSAddress(address payable _Address) public {
+
+        CS = ICreditScore(_Address);
+
+    }
+
+
+
+
 
     function newChit(address[] memory _participants , uint _cycleCount, uint _frequency, uint _amount) public {
 
@@ -140,7 +152,7 @@ contract dechit  {
 
     }
 
-    function getCrossChainMessage() public {
+    function getCrossChainMessage() internal {
         (, string memory message) = messenger.getLastReceivedMessageDetails();
         strings.slice memory s = message.toSlice();
         strings.slice memory  delim = " ".toSlice();
@@ -153,6 +165,8 @@ contract dechit  {
    }
 
    function getCrossChainPayment() public {
+
+        getCrossChainMessage();
         address _sender = address(bytes20(bytes(parts[0])));
         uint _fundId = stringToUint(parts[1]);
         uint _cycleId = stringToUint(parts[2]);
@@ -185,17 +199,17 @@ contract dechit  {
 
     function randomIndex(uint _number) public returns( uint _rnumber) {
 
-        uint256[] memory _num;
+        
         n = false;
-        if (RN.requestRandomWords() > 0){   
-            requestId = RN.lastRequestId();
-            (, n, _num) = RN.getRequestStatus(requestId);
-            if( n == true ) {
-                _rnumber = _num[0] % _number;    
-            }  else {
-                _rnumber = requestId % _number;
-            }
+          
+        requestId = RN.lastRequestId();
+        (, n, _num) = RN.getRequestStatus(requestId);
+        if( n == true ) {
+            _rnumber = _num[0] % _number;    
+        }  else {
+            _rnumber = requestId % _number;
         }
+        
         return _rnumber;
 
 
@@ -212,6 +226,7 @@ contract dechit  {
 
                 defaulters[_fundId].push(fundDetails[_fundId].participants[i]);
                 removeAddressFromQualified(_fundId, fundDetails[_fundId].participants[i]);
+                mintCreditScoreDetails(_fundId, "Defaulted" , fundDetails[_fundId].participants[i]);
             }
 
         }
@@ -246,7 +261,21 @@ contract dechit  {
     }
 
 
-    function mintCreditScoreDetails(uint _fundId) public {
+    function mintCreditScoreDetails(uint _fundId, string memory _status, address _applicant) public {
+
+        uint currentCycle = (fundDetails[_fundId].startDate - block.timestamp) / 60 / 60 / 24 / fundDetails[_fundId].frequency;
+        require(currentCycle >= fundDetails[_fundId].numberOfCycles , "Fund is not yet closed");
+
+        if(getIndexOfArray(defaulters[_fundId], _applicant) < defaulters[_fundId].length) {
+            _status = "Defaulted";
+        }
+
+        if(compareStrings(_status, "Defaulted")) {
+            CS.mint("Chit Fund", _fundId, _status , 0,  _applicant);
+
+        }   else if (compareStrings(_status, "Completed")) {
+            CS.mint("Chit Fund", _fundId, _status , 100,  _applicant);
+        }
 
     }
 
@@ -258,6 +287,10 @@ contract dechit  {
             }
         }
         return result;
+    }
+
+    function compareStrings(string memory a, string memory b) public pure returns (bool) {
+        return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
     }
     
 }
