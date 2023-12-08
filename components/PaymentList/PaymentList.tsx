@@ -16,16 +16,21 @@ import { useEffect, useRef, useState } from 'react'
 import { useWalletClient,useAccount } from "wagmi";
 import { ethers } from 'ethers';
 import { chitFundABI,chitFundAddress } from '../../contract';
+import { queryChitFundPayments } from '../../tableland/tableland';
+import { format } from 'date-fns';
+
 const people = [
   {
     name: 'Lindsay Walton',
-    date: '12-12-2023 12:24 PM',
+    datepaid:1701978822096,
     amount: '$100',
+    cycle:1
   },
   {
     name: 'Lindsay Walton',
-    date: '12-12-2023 12:24 PM',
+    datepaid: 1701978822096,
     amount: '$100',
+    cycle:1
   },
   // More people...
 ]
@@ -36,44 +41,21 @@ function classNames(...classes) {
 
 export default function PaymentList() {
     const { address, isConnecting, isDisconnected } = useAccount()
- 
+    const [payments,setPayments] = useState([])
 
- useEffect(()=>{
-    const listenToEvents = async () => {
-        if (address) {
-
-            const wallet = new ethers.Wallet(process.env.NEXT_PUBLIC_PRIVATE_KEY)
-            const provider = new ethers.providers.JsonRpcProvider(
-                "https://rpc.ankr.com/polygon_mumbai"
-              );
+    useEffect(()=>{
+      async function getPayments(){
+            if(address)
+  
+            {
+            const _payments = await queryChitFundPayments(address)
             
-            const signer = wallet.connect(provider);   
-          
-          const contract = new ethers.Contract(chitFundAddress, chitFundABI, signer);
-  
-          // Get past events
-          const pastEvents = await contract.queryFilter('PaymentMade', 0, 'latest', {
-            address: address
-          });
-  
-         
-          pastEvents.forEach((event) => {
-            console.log('Historical PaymentMade event:', {
-              FundId: event.args.FundId,
-              CycleId: event.args.CycleId,
-              Payer: event.args.Payer,
-              AmountPaid: event.args.AmountPaid,
-            });
-            // Handle historical event data as needed
-          });
-        
-       
+          setPayments(_payments)
         }
-      };
-  
-      listenToEvents();
- },[address])
-
+      }
+      getPayments()
+    },[address])
+    
   return (
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="sm:flex sm:items-center">
@@ -101,6 +83,9 @@ export default function PaymentList() {
                       Name
                     </th>
                     <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                      Cycle
+                    </th>
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                       Amount Paid
                     </th>
                  
@@ -108,7 +93,7 @@ export default function PaymentList() {
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {people.map((fund) => (
-                    <tr key={fund.date} >
+                    <tr key={fund.datepaid} >
                      
                       <td
                         className={classNames(
@@ -116,9 +101,11 @@ export default function PaymentList() {
                          
                         )}
                       >
-                        {fund.date}
+                       {format(fund.datepaid,"iii do MMM yyyy")}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{fund.name}</td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{fund.cycle}</td>
+
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{fund.amount}</td>
                     
                     </tr>

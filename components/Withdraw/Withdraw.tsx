@@ -6,12 +6,12 @@ import {  faDollar } from '@fortawesome/free-solid-svg-icons'
 import { config } from "@fortawesome/fontawesome-svg-core";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 
-export default function PaymentDialog(props:any) {
-  const makePayment = ()=>{
-    props.setOpen(false)
-    const cycle  =  document.getElementById("cycle").value 
-    props.makePayment(props.fund,cycle)
-}
+export default function WithdrawDialog(props:any) {
+  const makeWithdraw = ()=>{
+      props.setOpen(false)
+      const cycle  =  document.getElementById("cycle").value 
+      props.makeWithdraw(props.fund,cycle)
+  }
   return (
     <Transition.Root show={props.open} as={Fragment}>
       <Dialog as="div" className="relative z-10"  onClose={props.setOpen}>
@@ -45,7 +45,7 @@ export default function PaymentDialog(props:any) {
                   </div>
                   <div className="mt-3 text-center sm:mt-5">
                     <Dialog.Title as="h3" className="text-3xl font-bold leading-6 text-gray-900">
-                    Make ${props.fund?.amount} Payment
+                    Withdraw ${props?.fund?.amount * props?.fund?.participants} 
                     </Dialog.Title>
                   
                   </div>
@@ -74,11 +74,11 @@ export default function PaymentDialog(props:any) {
                 <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
                   <button
                     type="button"
-                    className="bg-my-red hover:bg-my-red-alt6 inline-flex w-full justify-center rounded-md  px-3 py-2 text-sm font-semibold text-white shadow-sm  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
-                    onClick={() => makePayment()}
+                    className="bg-my-red hover:bg-my-red-alt6 inline-flex w-full justify-center rounded-md  px-3 py-2 text-sm font-semibold text-white shadow-sm  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:col-start-2"
+                    onClick={() => makeWithdraw()}
 
                   >
-                    Make Payment
+                    Make Withdraw
                   </button>
                   <button
                     type="button"

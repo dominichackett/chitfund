@@ -12,18 +12,25 @@
   }
   ```
 */
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useWalletClient,useAccount } from "wagmi";
+import { ethers } from 'ethers';
+import { chitFundABI,chitFundAddress } from '../../contract';
+import { queryChitFundWithdrawals } from '../../tableland/tableland';
+import { format } from 'date-fns';
 
 const people = [
   {
     name: 'Lindsay Walton',
-    date: '12-12-2023 12:24 PM',
+    datewithdrawn: 1701978822096,
     amount: '$100',
+    cycle:1
   },
   {
     name: 'Lindsay Walton',
-    date: '12-12-2023 12:24 PM',
+    datewithdrawn: 1701978822096,
     amount: '$100',
+    cycle:1
   },
   // More people...
 ]
@@ -34,8 +41,21 @@ function classNames(...classes) {
 
 export default function EarningsList() {
  
- 
+  const { address, isConnecting, isDisconnected } = useAccount()
+ const [earnings,setEarnings] = useState([])
+  useEffect(()=>{
+    async function getEarnings(){
+          if(address)
 
+          {
+          const _earnings = await queryChitFundWithdrawals(address)
+          
+        setEarnings(_earnings)
+      }
+    }
+    getEarnings()
+  },[address])
+  
  
 
   return (
@@ -65,6 +85,9 @@ export default function EarningsList() {
                       Name
                     </th>
                     <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                      Cycle
+                    </th>
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                       Amount Received
                     </th>
                  
@@ -72,7 +95,7 @@ export default function EarningsList() {
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {people.map((fund) => (
-                    <tr key={fund.date} >
+                    <tr key={fund.datewithdrawn} >
                      
                       <td
                         className={classNames(
@@ -80,9 +103,11 @@ export default function EarningsList() {
                          
                         )}
                       >
-                        {fund.date}
+                        {format(fund.datewithdrawn,"iii do MMM yyyy")}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{fund.name}</td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{fund.cycle}</td>
+
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{fund.amount}</td>
                     
                     </tr>

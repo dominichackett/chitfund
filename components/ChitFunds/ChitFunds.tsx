@@ -6,25 +6,34 @@ import ChitFundImage from "../../images/chitfund.svg";
 import UserImage from "../../images/user.png"
 import Notification from '../Notification/Notification';
 import PaymentDialog from '../Payment/Payment';
+import WidthdrawDialog from '../Withdraw/Withdraw';
+
 import { ccipPaymentContractAddress,ccipPaymentContractABI,usdcContractAddress,usdcContractABI, chitFundAddress, chitFundABI } from '../../contract';
 import { useNetwork } from 'wagmi'
 import { polygonMumbai } from 'viem/chains';
 import { useWalletClient,useAccount } from "wagmi";
 import { ethers } from 'ethers';
+import { queryChitFunds,insertChitFundPayment,insertChitFundWithdrawal } from '../../tableland/tableland';
+import { useSigner } from "../../hooks/useEthersAccounts";
+
   function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
   }  
   export default function HomeFeed() {
     const { chain } = useNetwork()
     const { data: walletClient } = useWalletClient()
-
+    const { address, isConnecting, isDisconnected } = useAccount()
+    const signer = useSigner();
+   
    const router = useRouter();
-    const [chitfunds,setChitFunds] = useState([{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly"}
-    ,{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly"},{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly"},{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly"},{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly"},{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly"}]);
+    const [chitfunds,setChitFunds] = useState([{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly",participants:12}
+    ,{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly",participants:12},{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly",participants:12},{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly",participants:12},{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly",participants:12},{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly",participants:12}]);
     const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
+    const [openWithdrawDialog, setOpenWithdrawDialog] = useState(false);
     const [fund,setFund] = useState()
+    
     const [amount,setAmount] = useState()
-    // NOTIFICATIONS functions
+    const [participants,setParticipants] = useState()    // NOTIFICATIONS functions
     const [notificationTitle, setNotificationTitle] = useState();
     const [notificationDescription, setNotificationDescription] = useState();
     const [dialogType, setDialogType] = useState(1);
@@ -32,6 +41,11 @@ import { ethers } from 'ethers';
     const close = async () => {
       setShow(false);
     };
+
+    const closeWithdrawDialog = () => {
+      setOpenWithdrawDialog(false);
+    }; 
+
 
     const closePaymentDialog = () => {
       setOpenPaymentDialog(false);
@@ -183,11 +197,107 @@ import { ethers } from 'ethers';
   
   }
 
-  function handleClick(fund:number,_amount:number) {
+  const makeWithdraw = async (_fund:any,cycle:number) => {
+    if (isNaN(cycle)) {
+      setDialogType(2); //Error
+      setNotificationTitle("Withdraw");
+      setNotificationDescription("You have not entered a cycle.");
+      setShow(true);
+
+      return;
+    }
+
+     
+
+    if (cycle  <= 0) {
+      setDialogType(2); //Error
+      setNotificationTitle("Withdraw");
+      setNotificationDescription("You have not entered a cycle.");
+      setShow(true);
+
+      return;
+    }
+
+     
+    const usdcContract = new ethers.Contract(
+      usdcContractAddress,
+      usdcContractABI,
+      signer
+    );
+    try {
+
+
+    
+            const payContract = new ethers.Contract(
+              XFundAddress,
+              XFundABI,
+              signer
+             );
+
+             
+             let tx2 = await payContract.callStatic.withdrawCycleAmount(_fund.id, cycle,
+              
+              {
+                gasLimit: 3000000,
+              }
+            );
+      
+            let tx3 = await payContract.callStatic.withdrawCycleAmount(_fund.id,cycle,
+              
+                {
+                gasLimit: 3000000,
+              }
+            );
+            await tx3.wait();    
+            const datepaid = new Date().getTime()
+              await insertXFundWithdrawal(address,_fund.name,cycle,parseInt(_fund.amount),datepaid)
+            setDialogType(1); //Success
+            setNotificationTitle("Withdraw");
+            setNotificationDescription("Payment successfully made.");
+            setShow(true); 
+
+
+         
+      
+
+    }
+    catch(error)
+    {
+      if (error.code === "TRANSACTION_REVERTED") {
+        console.log("Transaction reverted");
+        //let revertReason = ethers.utils.parseRevertReason(error.data);
+        setNotificationDescription("Reverted");
+      } else if (error.code === "ACTION_REJECTED") {
+        setNotificationDescription("Transaction rejected by user");
+      } else {
+        console.log(error);
+        //const errorMessage = ethers.utils.revert(error.reason);
+        setNotificationDescription(
+          `Transaction failed with error: ${error.reason}`
+        );
+      }
+      setDialogType(2); //Error
+      setNotificationTitle("Wtihdraw");
+
+      setShow(true);
+    }    
+  
+
+}
+
+  function handleClickMakePayment(_fund:any) {
     // insert logic here
-    setFund(fund);
-    setAmount(_amount)
+    setFund(_fund);
+    
     setOpenPaymentDialog(true);
+  }
+
+  
+  function handleClickWidthdraw(_fund:any) {
+    // insert logic here
+    setFund(_fund);
+    setOpenWithdrawDialog(true);
+    
   }
 
     return (
@@ -195,7 +305,7 @@ import { ethers } from 'ethers';
     
       <ul role="list" className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
         {chitfunds.map((chitfund) => (
-          <li key={chitfund.id} className="relative shadow-lg rounded-lg">
+          <li key={chitfund.id} className="p-6 relative shadow-lg rounded-lg">
             <div    className="group block w-full aspect-w-10 aspect-h-7 rounded-lg bg-gray-100 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-gray-100 focus-within:ring-my-green overflow-hidden">
               <img crossorigin src={chitfund.image} alt="" className="object-cover  group-hover:opacity-75" />
              
@@ -221,13 +331,22 @@ import { ethers } from 'ethers';
                     <div> 
             <button
             type="button"
-            onClick={()=> handleClick(chitfund.id,chitfund.amount)}
-            className="cursor-pointer ml-12  mb-2 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-my-red hover:bg-my-red-alt6 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-my-red-light"
+            onClick={()=> handleClickMakePayment(chitfund)}
+            className="cursor-pointer w-full mb-2 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-my-red hover:bg-my-red-alt6 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-my-red-light"
           >
             Make Payment
           </button>
           </div>
-           
+          <div> 
+            <button
+            type="button"
+            onClick={()=> handleClickWidthdraw(chitfund)}
+            className="cursor-pointer w-full mb-2 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-my-red hover:bg-my-red-alt6 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-my-red-light"
+          >
+            Withdraw
+          </button>
+          </div>
+
           </li>
         ))}
       </ul>
@@ -237,6 +356,14 @@ import { ethers } from 'ethers';
         makePayment={makePayment}
         fund={fund}
         amount={amount}
+      />
+
+<WidthdrawDialog
+        open={openWithdrawDialog}
+        setOpen={closeWithdrawDialog}
+        makeWithdraw={makeWithdraw}
+        fund={fund}
+        
       />
       <Notification
         type={dialogType}

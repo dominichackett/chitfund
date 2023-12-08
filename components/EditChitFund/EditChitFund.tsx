@@ -67,7 +67,7 @@ export default function EditChitFund() {
 
       useEffect(()=>{
      async function setRegister(){   
-      if(walletClient) 
+      if(signer) 
       {
 
 
@@ -78,13 +78,13 @@ export default function EditChitFund() {
         const reg = new Registry(_db.config); // Note: *must* have a signer
         
         const tx = await reg.setController({
-          controller: "0x6620CdE1c08d84103D2d81f5f2AB645A6478DFBc", // The address to send the table to
-          tableName: "mychitfund_80001_8389", // Also accepts name as string
+          controller: "0x02ceA2F0F3456775A206A9CC54133ba1ff44b3c4", // The address to send the table to
+          tableName: "xfundwithdrawal_80001_8413", // Also accepts name as string
         });
 
         const tx2 = await reg.setController({
-          controller: "0x6620CdE1c08d84103D2d81f5f2AB645A6478DFBc", // The address to send the table to
-          tableName: "xfund_80001_8406", // Also accepts name as string
+          controller: "0x02ceA2F0F3456775A206A9CC54133ba1ff44b3c4", // The address to send the table to
+          tableName: "chitfundwithdrawal_80001_8411", // Also accepts name as string
         });
         
       }
@@ -92,7 +92,7 @@ export default function EditChitFund() {
 
     setRegister()
          
-    },[walletClient])  
+    },[signer])  
   
     
     useEffect(() => {
@@ -164,7 +164,7 @@ export default function EditChitFund() {
        await transaction.wait(); // Wait for the transaction to be mined
       // Wait for the event promise to be resolved
        const fundId = await eventPromise;
-       await insertChitFund(fundId,address,data.name,data.frequency,startdate,imageurl,data.amount,data.cycleCount,data.participants)
+       await insertChitFund(fundId,address,data.name,parseInt(data.frequency),startdate,imageurl,parseInt(data.amount),parseInt(data.cycleCount),data.participants)
      
        setNotificationDescription("ChitFund Successfully Created")
        setDialogType(1) //Success

@@ -11,13 +11,15 @@ import Link from 'next/link'
 import Footer from '../components/Footer/Footer'; 
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useRouter } from "next/navigation";
 
 const navigation = [
   { name: 'Home', href: '/' },
   ]
 
 export default function Home() {
-  
+  const router = useRouter();
+
  
   return (
     <div className=" bg-white ">
@@ -122,7 +124,14 @@ export default function Home() {
               Empowering Community Prosperity: Secure Chits, Transparent Growth - Unleashing the Future of Savings with Blockchain Innovation!
               </p>
               <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
-              
+              <div className="rounded-md ">
+                  <button
+                    onClick={()=>router.push("/dashboard")}
+                    className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-my-red hover:bg-my-red-light md:py-4 md:text-lg md:px-10"
+                  >
+                    Dashboard
+                  </button>
+                </div>
                 <div >
                   
                         <img
