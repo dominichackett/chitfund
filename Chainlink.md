@@ -27,3 +27,6 @@ CCIP Usage  [Click to view code](https://github.com/dominichackett/chitfund/blob
 
 A **chainlink automation** job **CCMChecker** checks for any CCIP message every 15 minutes to trigger the payment update in the Core smart contract for all the chit funds created. Also, there are fund-specific automation jobs such as **FUNDID100001** which run as per the payment frequency of the Fund to check defaults and to select the winner of the lumpsum payments.
 
+### Smart Contract Code
+
+Smart Contracts  [Click to view code](https://github.com/dominichackett/chitfund/tree/master/contracts) for more details.
