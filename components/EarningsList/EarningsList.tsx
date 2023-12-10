@@ -19,21 +19,7 @@ import { chitFundABI,chitFundAddress } from '../../contract';
 import { queryChitFundWithdrawals } from '../../tableland/tableland';
 import { format } from 'date-fns';
 
-const people = [
-  {
-    name: 'Lindsay Walton',
-    datewithdrawn: 1701978822096,
-    amount: '$100',
-    cycle:1
-  },
-  {
-    name: 'Lindsay Walton',
-    datewithdrawn: 1701978822096,
-    amount: '$100',
-    cycle:1
-  },
-  // More people...
-]
+
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -94,7 +80,7 @@ export default function EarningsList() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {people.map((fund) => (
+                  {earnings.map((fund) => (
                     <tr key={fund.datewithdrawn} >
                      
                       <td

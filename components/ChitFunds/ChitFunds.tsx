@@ -26,8 +26,7 @@ import { useSigner } from "../../hooks/useEthersAccounts";
     const signer = useSigner();
    
    const router = useRouter();
-    const [chitfunds,setChitFunds] = useState([{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly",participants:12}
-    ,{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly",participants:12},{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly",participants:12},{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly",participants:12},{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly",participants:12},{id:123,name:"My Savings",image:ChitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly",participants:12}]);
+    const [chitfunds,setChitFunds] = useState([]);
     const [openPaymentDialog, setOpenPaymentDialog] = useState(false);
     const [openWithdrawDialog, setOpenWithdrawDialog] = useState(false);
     const [fund,setFund] = useState()
@@ -51,7 +50,7 @@ import { useSigner } from "../../hooks/useEthersAccounts";
       setOpenPaymentDialog(false);
     };
   
-    const makePayment = async (fund:number,cycle:number,_amount:number) => {
+    const makePayment = async (fund:any,cycle:number) => {
       if (isNaN(cycle)) {
         setDialogType(2); //Error
         setNotificationTitle("Make Payment");
@@ -61,7 +60,7 @@ import { useSigner } from "../../hooks/useEthersAccounts";
         return;
       }
 
-        if (isNaN(_amount)) {
+        if (isNaN(fund.amount)) {
         setDialogType(2); //Error
         setNotificationTitle("Make Payment");
         setNotificationDescription("You have not entered an amount.");
@@ -80,7 +79,7 @@ import { useSigner } from "../../hooks/useEthersAccounts";
         return;
       }
 
-        if ( _amount <= 0  ) {
+        if ( fund.amount <= 0  ) {
         setDialogType(2); //Error
         setNotificationTitle("Make Payment");
         setNotificationDescription("You have not entered an amount.");
@@ -91,25 +90,20 @@ import { useSigner } from "../../hooks/useEthersAccounts";
       const usdcContract = new ethers.Contract(
         usdcContractAddress.get(chain.id),
         usdcContractABI,
-        walletClient
+        signer
       );
       try {
 
 
-        const amount = ethers.utils.parseUnits(_amount, 18);
+        const amount = ethers.utils.parseUnits(fund.amount.toString(), 18);
         let tx = await usdcContract.callStatic.approve(
           chain.id  == polygonMumbai.id ? chitFundAddress : ccipPaymentContractAddress.get(chain.id),
-          amount,
-          {
-            gasLimit: 3000000,
-          }
+          amount
         );
   
         let tx1 = await  usdcContract.approve(
           chain.id  == polygonMumbai.id ? chitFundAddress : ccipPaymentContractAddress.get(chain.id),          amount,
-          {
-            gasLimit: 3000000,
-          }
+          
         );
         await tx1.wait();    
 
@@ -118,27 +112,20 @@ import { useSigner } from "../../hooks/useEthersAccounts";
               const payContract = new ethers.Contract(
                 chitFundAddress,
                 chitFundABI,
-                walletClient
+                signer
                );
 
                let tx = await payContract.callStatic.makePayment(
-                fund,cycle,
-                {
-                  gasLimit: 3000000,
-                }
+                fund.id,cycle,
+                
               );
         
-              let tx1 = await payContract.callStatic.makePayment(
-                fund,cycle,
-                  {
-                  gasLimit: 3000000,
-                }
+              let tx1 = await payContract.makePayment(
+                fund.id,cycle,
+                  
               );
               await tx1.wait();    
-              setDialogType(1); //Success
-              setNotificationTitle("Make Payment");
-              setNotificationDescription("Payment successfully made.");
-              setShow(true); 
+              
 
 
            }
@@ -147,30 +134,31 @@ import { useSigner } from "../../hooks/useEthersAccounts";
             const payContract = new ethers.Contract(
               ccipPaymentContractAddress.get(chain.id),
               ccipPaymentContractABI,
-              walletClient
+              signer
              );
 
-             let tx = await payContract.callStatic.makePayment(
-              fund,cycle,
-              {
-                gasLimit: 3000000,
-              }
+             let tx = await payContract.callStatic.sendMessage(
+             address, fund.id.cycle,amount
+              
             );
       
-            let tx1 = await payContract.callStatic.makePayment(
-              fund,cycle,
-                {
-                gasLimit: 3000000,
-              }
+            let tx1 = await payContract.sendMessage(
+              address,fund.id,cycle,amount
+                
             );
             await tx1.wait();    
-            setDialogType(1); //Success
-            setNotificationTitle("Make Payment");
-            setNotificationDescription("Payment successfully made.");
-            setShow(true); 
+           
 
 
            }
+           const datepaid = new Date().getTime()
+
+           await insertChitFundPayment(address,fund.name,cycle,parseInt(fund.amount),datepaid)
+
+           setDialogType(1); //Success
+           setNotificationTitle("Make Payment");
+           setNotificationDescription("Payment successfully made.");
+           setShow(true); 
 
       }
       catch(error)
@@ -237,16 +225,12 @@ import { useSigner } from "../../hooks/useEthersAccounts";
              
              let tx2 = await payContract.callStatic.withdrawCycleAmount(_fund.id, cycle,
               
-              {
-                gasLimit: 3000000,
-              }
+             
             );
       
             let tx3 = await payContract.callStatic.withdrawCycleAmount(_fund.id,cycle,
               
-                {
-                gasLimit: 3000000,
-              }
+              
             );
             await tx3.wait();    
             const datepaid = new Date().getTime()
@@ -300,6 +284,28 @@ import { useSigner } from "../../hooks/useEthersAccounts";
     
   }
 
+  useEffect(()=>{
+    async function getFunds(){
+          if(address)
+
+          {
+          const _funds = await queryChitFunds(address)
+          console.log(_funds)
+          let myFunds = [];    
+         _funds.forEach((_fund)=>{
+          _fund.frequency =  (_fund.frequency == 7 ? "Weekly":"Monthly")
+          var  _participants= _fund.participants.split('\n'); // Split text into an array of lines
+          _fund.participants = _participants.length
+          myFunds.push({..._fund})
+          console.log(myFunds)
+        })
+
+        setChitFunds(myFunds)
+      }
+    }
+    getFunds()
+  },[address])
+
     return (
         <div className="px-8 mt-8">
     
@@ -314,15 +320,16 @@ import { useSigner } from "../../hooks/useEthersAccounts";
                 <div className="flex items-center mt-4 ">
                       <div className="flex-shrink-0 h-10 w-10">
                         <img crossOrigin onClick={() => router.push(`/viewprofile/${chitfund.username}`)} className="cursor-pointer ml-2 h-8 w-8 rounded-full" 
-                        src={chitfund.ownerImage} alt="" />
+                        src={UserImage.src} alt="" />
                       </div>
                       <div className="ml-2 mr-2">
                       <div onClick={() => router.push(`/view/${chitfund.id}`)} className="cursor-pointer text-sm font-medium text-gray-900">{chitfund.name}</div>
 
                          </div>
                     </div>
-                    <div onClick={() => router.push(`/viewprofile/${chitfund.username}`)} className="cursor-pointer mb-2 ml-12 text-sm  text-gray-900">{chitfund.username}</div>
-                    <div className="cursor-pointer mb-2 ml-12 text-sm  text-gray-900"><span className='text-bold'>Participants: </span>{chitfund?.participants ? chitfund.participants:12 }</div>
+                    <div className="ml-12 text-bold cursor-pointer mb-2  text-sm text-gray-900">
+  {chitfund.owner.slice(0, 6)}.....{chitfund.owner.slice(-6)}
+</div>                           <div className="cursor-pointer mb-2 ml-12 text-sm  text-gray-900"><span className='text-bold'>Participants: </span>{chitfund?.participants ? chitfund.participants:12 }</div>
 
                     <div className="cursor-pointer mb-2 ml-12 text-sm  text-gray-900"><span className='text-bold'>Frequency: </span>{chitfund.frequency}</div>
                     <div className="cursor-pointer mb-2 ml-12 text-sm  text-gray-900"><span className='text-bold'>Amount:</span> ${chitfund.amount}</div>

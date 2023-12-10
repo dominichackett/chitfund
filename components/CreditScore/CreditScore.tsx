@@ -14,7 +14,7 @@ import { useSigner } from "../../hooks/useEthersAccounts";
   }  
   export default function CreditScore() {
     const router = useRouter();
-    const [creditScores,setCreditScores] = useState([{id:123,name:"My Savings",image:chitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly"},{id:123,name:"My Savings",image:chitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly"},{id:123,name:"My Savings",image:chitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly"},{id:123,name:"My Savings",image:chitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly"},{id:123,name:"My Savings",image:chitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly"},{id:123,name:"My Savings",image:chitFundImage.src,ownerImage:UserImage.src,username:"Dominic Hackett",startdate:new Date(),amount:100,frequency:"Monthly"}]);
+    const [creditScores,setCreditScores] = useState([]);
     const { address, isConnecting, isDisconnected } = useAccount()
     const signer = useSigner();
    
@@ -31,8 +31,25 @@ import { useSigner } from "../../hooks/useEthersAccounts";
           try{
 
             console.log(address)
-            let tx = await contract.totalSupply()
-            console.log(tx)
+            let tx = await contract.balanceOf("0x7F36cba7Da4F7915bf5775cBF91f08F2F8f7b67a")
+            const noTokens = tx.toNumber()
+            let scores = []
+            for(var tokenCount =0 ;tokenCount<noTokens;tokenCount++)
+            {
+              let tx1 = await contract.tokenOfOwnerByIndex("0x7F36cba7Da4F7915bf5775cBF91f08F2F8f7b67a",tokenCount)
+
+              console.log(tx1.toNumber())
+              let uri = await contract.tokenURI(tx1.toNumber())
+              uri = uri.replace("data:application/json;base64,","")
+              console.log(uri)
+              const decodedString = atob(uri);
+              const jsonData = JSON.parse(decodedString);
+              console.log(jsonData)
+              scores.push(jsonData)
+             
+                
+            }
+            setCreditScores(scores)
           }catch(error){
             console.log(error)
           }
@@ -58,7 +75,7 @@ import { useSigner } from "../../hooks/useEthersAccounts";
                 <div className="flex items-center mt-4 ">
                       <div className="flex-shrink-0 h-10 w-10">
                         <img crossOrigin onClick={() => router.push(`/viewprofile/${creditScore.username}`)} className="cursor-pointer ml-2 h-8 w-8 rounded-full" 
-                        src={creditScore.ownerImage} alt="" />
+                        src={creditScore.image} alt="" />
                       </div>
                       <div className="ml-2 mr-2">
                       <div onClick={() => router.push(`/view/${creditScore.id}`)} className="cursor-pointer text-sm font-medium text-gray-900">{creditScore.name}</div>
@@ -66,12 +83,7 @@ import { useSigner } from "../../hooks/useEthersAccounts";
                          </div>
                     </div>
                     <div onClick={() => router.push(`/viewprofile/${creditScore.username}`)} className="cursor-pointer mb-2 ml-12 text-sm  text-gray-900">{creditScore.username}</div>
-                    <div className="cursor-pointer mb-2 ml-12 text-sm  text-gray-900"><span className='text-bold'>Participants: </span>{creditScore?.participants ?creditScore.participants:12 }</div>
-
-                    <div className="cursor-pointer mb-2 ml-12 text-sm  text-gray-900"><span className='text-bold'>Frequency: </span>{creditScore.frequency}</div>
-                    <div className="cursor-pointer mb-2 ml-12 text-sm  text-gray-900"><span className='text-bold'>Amount:</span> ${creditScore.amount}</div>
-                     <div className="ml-12 text-xs text-gray-500"><span className='text-bold'>Start Date:</span> {format(creditScore.startdate,"iii do MMM yyyy")}</div>
-                    <br />
+                          <br />
            
           </li>
         ))}

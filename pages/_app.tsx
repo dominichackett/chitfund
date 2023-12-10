@@ -5,14 +5,14 @@ import type { AppProps } from 'next/app';
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
 import {
   
-  polygonMumbai,sepolia,baseGoerli,optimismGoerli
+  polygonMumbai,sepolia,avalancheFuji,
 } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [
    
-    polygonMumbai,sepolia,baseGoerli,optimismGoerli
+    polygonMumbai,sepolia,avalancheFuji
   ],
   [publicProvider()]
 );

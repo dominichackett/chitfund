@@ -1,8 +1,8 @@
 import {
   
-    polygonMumbai,sepolia,baseGoerli,optimismGoerli
+    polygonMumbai,sepolia,avalancheFuji
   } from 'wagmi/chains';
-export const chitFundAddress = ""
+export const chitFundAddress = "0x5817a990976259a8bdF5Bd4998aca797a7847Bf6"
 
  export const chitFundABI = ["function newChit(address[] memory _participants , uint _cycleCount, uint _frequency, uint _amount) public",
 "function withdrawCycleAmount(uint _fundId, uint _cycleId) public",
@@ -17,7 +17,7 @@ export const chitFundAddress = ""
 
 
 
-export const creditScoreAddress = "0x62e8c0Bd049b68f0b5845FF8b6C67d3A187D7894"
+export const creditScoreAddress = "0xa32aa3b65cA289f58308Fce28457ADf74994763A"
 export const creditScoreABI = [
     "function balanceOf(address owner) external view returns (uint256)",
     "function ownerOf(uint256 tokenId) external view returns (address)",
@@ -30,16 +30,14 @@ export const creditScoreABI = [
     "function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data) external",
     "function totalSupply() external view returns (uint256)",
     "function tokenByIndex(uint256 index) external view returns (uint256)",
-    "function tokenOfOwnerByIndex(address owner, uint256 index) external view returns (uint256)"
+    "function tokenOfOwnerByIndex(address owner, uint256 index) external view returns (uint256)",
+    "function tokenURI(uint256 _tokenId) public view virtual override returns (string memory)"
   ]
 
-export const usdcContractAddress = new Map([[polygonMumbai.id,"0xD238246168278E2dE843b573f9Ff04db8c22f1aC"]
-,[sepolia.id,"0x564a4aC7716F9c5540E0afE163391146e99AA10d"],[baseGoerli.id,"0x8d5862b0568A2d644be4C406bf6763C025dd8535"],[optimismGoerli.id,"0x64C5668B710E751D4C0F068cf6D45FF07fFdB32a"]
-])
-export const usdcContractABI = []
+export const usdcContractAddress = new Map([[polygonMumbai.id,"0x9e94358f4527bcd38770645cC74B1DfF065a54a8"]
+,[sepolia.id,"0xa1A12162204A28b9e76Fcebd4066EFeC6C44B611"],[avalancheFuji.id,"0x9b47703A489107672A3C8D42Be787145cC86fE96"]])
+export const usdcContractABI = ["function approve(address spender, uint256 amount) external returns (bool)"]
 
-export const ccipPaymentContractAddress = new Map([[polygonMumbai.id,"0xD238246168278E2dE843b573f9Ff04db8c22f1aC"]
-,[sepolia.id,"0x564a4aC7716F9c5540E0afE163391146e99AA10d"],[baseGoerli.id,"0x8d5862b0568A2d644be4C406bf6763C025dd8535"],[optimismGoerli.id,"0x64C5668B710E751D4C0F068cf6D45FF07fFdB32a"]
-])
-
-export const ccipPaymentContractABI = []
+export const ccipPaymentContractAddress =new Map([
+[sepolia.id,"0xDdE153f23E83489113E9Be6033dceE16E6fC7507"],[avalancheFuji.id,"0xC8165aBE224abf26fD8628D2E171C1FA12478CAB"]])
+export const ccipPaymentContractABI = ["function sendMessage( string memory _userAddress, uint _fundId, uint _cycleId, uint _payAmount) public"]

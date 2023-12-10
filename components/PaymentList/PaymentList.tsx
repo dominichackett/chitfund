@@ -19,21 +19,7 @@ import { chitFundABI,chitFundAddress } from '../../contract';
 import { queryChitFundPayments } from '../../tableland/tableland';
 import { format } from 'date-fns';
 
-const people = [
-  {
-    name: 'Lindsay Walton',
-    datepaid:1701978822096,
-    amount: '$100',
-    cycle:1
-  },
-  {
-    name: 'Lindsay Walton',
-    datepaid: 1701978822096,
-    amount: '$100',
-    cycle:1
-  },
-  // More people...
-]
+
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -41,7 +27,7 @@ function classNames(...classes) {
 
 export default function PaymentList() {
     const { address, isConnecting, isDisconnected } = useAccount()
-    const [payments,setPayments] = useState([])
+    const [payments,setPayments] = useState([ ])
 
     useEffect(()=>{
       async function getPayments(){
@@ -49,7 +35,7 @@ export default function PaymentList() {
   
             {
             const _payments = await queryChitFundPayments(address)
-            
+          if(_payments.length > 0)  
           setPayments(_payments)
         }
       }
@@ -92,7 +78,7 @@ export default function PaymentList() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {people.map((fund) => (
+                  {payments.map((fund) => (
                     <tr key={fund.datepaid} >
                      
                       <td

@@ -90,7 +90,7 @@ export default function EditChitFund() {
       }
     }
 
-    setRegister()
+    //setRegister()
          
     },[signer])  
   
@@ -109,6 +109,9 @@ export default function EditChitFund() {
     }, [selectedFile])
     
 
+
+
+    
   const _handleSubmit = async (data:any,e:any) => {
 
     if(chain.id != polygonMumbai.id)
@@ -135,37 +138,39 @@ export default function EditChitFund() {
     setNotificationDescription("Uploading ChitFund Image.")
     setDialogType(3) //Information
     setShow(true)     
-    // Create a promise to resolve when the event is emitted
-  let resolveFunc;
-  const eventPromise = new Promise((resolve) => {
-    resolveFunc = resolve;
-  });
 
-  
     try 
     { 
        const cid = await storage.put([new File([selectedFile],filename.current)]);
+       setShow(false)
        const imageurl = "https://"+cid+".ipfs.w3s.link/"+filename.current
        const startdate = new Date().getTime()
 
        setNotificationTitle("Create ChitFund")
        const contract = new ethers.Contract(chitFundAddress, chitFundABI, signer);
-      // Subscribe to the event
-       contract.on('NewFund', (fundId, participants, numberOfCycles, amountToBePaid, startDate, event) => {
-        console.log('New Fund Created:', fundId.toNumber());
-       // Resolve the promise with the fundId
-        resolveFunc(fundId.toNumber());
-     });
+       
   
        var  participants= data.participants.split('\n'); // Split text into an array of lines
- 
-       const tx = await contract.callStatic.newChit(participants, data.cycleCount, data.frequency, data.amount);
-       const transaction = await contract.newChit(participants, data.cycleCount, data.frequency, data.amount);
+       const amount = ethers.utils.parseUnits(data.amount, 18);
+
+       const tx = await contract.callStatic.newChit(participants, data.cycleCount, data.frequency, amount);
+       const transaction = await contract.newChit(participants, data.cycleCount, data.frequency, amount);
        await transaction.wait(); // Wait for the transaction to be mined
       // Wait for the event promise to be resolved
-       const fundId = await eventPromise;
+      // Access the transaction receipt for more information
+    const receipt = await signer.provider.getTransactionReceipt(transaction.hash);
+
+    // Access event data from the receipt (replace 'YourEventName' with your actual event name)
+    console.log(receipt)
+    const iface = new ethers.utils.Interface(chitFundABI);
+    const events = iface.parseLog(receipt.logs[0]);
+   console.log(events)
+    const fundId = events.args.FundId.toNumber();
+
+       console.log(events.args); // Access event arguments
+
        await insertChitFund(fundId,address,data.name,parseInt(data.frequency),startdate,imageurl,parseInt(data.amount),parseInt(data.cycleCount),data.participants)
-     
+
        setNotificationDescription("ChitFund Successfully Created")
        setDialogType(1) //Success
        setShow(true)    
@@ -181,6 +186,7 @@ export default function EditChitFund() {
 
     }  
 
+   
   }
   function validateParticipants(value:any){
     console.log(value)
