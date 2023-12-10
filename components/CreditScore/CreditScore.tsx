@@ -31,12 +31,12 @@ import { useSigner } from "../../hooks/useEthersAccounts";
           try{
 
             console.log(address)
-            let tx = await contract.balanceOf("0x7F36cba7Da4F7915bf5775cBF91f08F2F8f7b67a")
+            let tx = await contract.balanceOf(address)
             const noTokens = tx.toNumber()
             let scores = []
             for(var tokenCount =0 ;tokenCount<noTokens;tokenCount++)
             {
-              let tx1 = await contract.tokenOfOwnerByIndex("0x7F36cba7Da4F7915bf5775cBF91f08F2F8f7b67a",tokenCount)
+              let tx1 = await contract.tokenOfOwnerByIndex(address,tokenCount)
 
               console.log(tx1.toNumber())
               let uri = await contract.tokenURI(tx1.toNumber())
