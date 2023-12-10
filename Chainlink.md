@@ -1,7 +1,7 @@
 
 ## Powered by Chainlink
 
-![Chainlink](https://github.com/dominichackett/3dprintnearme/blob/opendatahack/images/home.png)
+![Chainlink](https://github.com/dominichackett/chitfund/blob/master/images/chainlink.png)
 
 ### Chainlink VRF
 
